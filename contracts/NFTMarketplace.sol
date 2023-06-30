@@ -112,4 +112,110 @@ contract NFTMarketplace is ERC721URIStorage {
     return listingPrice;
   }
 
+  /**
+  * @dev Creates a new token with the specified token URI and price.
+  * @param tokenURI_ The token URI.
+  * @param price The token price.
+  * @return The new token's ID.
+  */
+  function createToken(
+    string memory tokenURI_, 
+    uint256 price
+  ) external
+    payable
+    returns (uint256){
+    require(price > 0, 
+      "Price must be at least 1 wei"
+    );
+    require(
+      msg.value == listingPrice,
+      "Please send the exact listing price amount"
+    );
+
+    tokenIds += 1;
+    _mint(msg.sender, tokenIds);
+    _setTokenURI(tokenIds, tokenURI_);
+
+    idToToken[tokenIds] = Token(
+      tokenIds,
+      payable(msg.sender),
+      payable(address(this)),
+      price,
+      false
+    );
+
+    _transfer(msg.sender, address(this), tokenIds);
+
+    emit TokenCreated(tokenIds, msg.sender, address(this), price);
+
+    return tokenIds;
+  }
+
+  /**
+  * @dev Buys a token with the specified token ID.
+  * @param tokenId The token ID to buy.
+  */
+  function buyToken(
+    uint256 tokenId
+  ) external payable {
+    uint256 price = idToToken[tokenId].price;
+    address seller = idToToken[tokenId].seller;
+
+    require(
+      msg.value == price,
+      "The amount sent does not match the price"
+    );
+
+    idToToken[tokenId].owner = payable(msg.sender);
+    idToToken[tokenId].sold = true;
+    idToToken[tokenId].seller = payable(address(0));
+    itemsSold += 1;
+
+    _transfer(address(this), msg.sender, tokenId);
+    payable(owner).transfer(listingPrice);
+    payable(seller).transfer(msg.value);
+
+    emit TokenSold(
+      tokenId, 
+      msg.sender, 
+      address(this), 
+      price
+    );
+  }
+
+  /**
+  * @dev Resells a token with the specified token ID and price.
+  * @param tokenId The token ID to resell.
+  * @param price The new token price.
+  */
+  function resellToken(
+    uint256 tokenId, 
+    uint256 price
+  ) external payable {
+    require(
+      idToToken[tokenId].owner == msg.sender,
+      "Only the token owner is allowed to resell it"
+    );
+    require(
+      msg.value == listingPrice,
+      "Please send the exact listing price amount"
+    );
+
+    idToToken[tokenId].sold = false;
+    idToToken[tokenId].price = price;
+    idToToken[tokenId].seller = payable(msg.sender);
+    idToToken[tokenId].owner = payable(address(this));
+    itemsSold -= 1;
+
+    _transfer(msg.sender, address(this), tokenId);
+
+    emit ResaleCreated(
+      tokenId, 
+      msg.sender, 
+      address(this), 
+      price
+    );
+  }
+
+  /**
 }
