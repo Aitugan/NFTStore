@@ -218,4 +218,78 @@ contract NFTMarketplace is ERC721URIStorage {
   }
 
   /**
+  * @dev Fetches all unsold tokens.
+  * @return An array of unsold tokens.
+  */
+  function fetchAllUnsoldTokens() external view returns (
+    Token[] memory) {
+    uint256 itemCount = tokenIds;
+    uint256 unsoldItemCount = tokenIds - itemsSold;
+    uint256 currentIndex = 0;
+
+    Token[] memory items = new Token[](unsoldItemCount);
+    for (uint256 i = 1; i <= itemCount; i++) {
+      if (idToToken[i].owner == address(this)) {
+        Token storage currentItem = idToToken[i];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }
+    }
+    return items;
+  }
+
+  /**
+  * @dev Fetches tokens owned by the caller.
+  * @return An array of tokens owned by the caller.
+  */
+  function fetchTokensOwnedByMe() public view returns (
+    Token[] memory) {
+    uint256 totalItemCount = tokenIds;
+    uint256 itemCount = 0;
+    uint256 currentIndex = 0;
+
+    for (uint256 i = 1; i <= totalItemCount; i++) {
+      if (idToToken[i].owner == msg.sender) {
+        itemCount += 1;
+      }
+    }
+
+    Token[] memory items = new Token[](itemCount);
+    for (uint256 i = 1; i <= totalItemCount; i++) {
+      if (idToToken[i].owner == msg.sender) {
+        Token storage currentItem = idToToken[i];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }
+    }
+    return items;
+  }
+
+  /**
+  * @dev Fetches tokens listed by the caller.
+  * @return An array of tokens listed by the caller.
+  */
+  function fetchMyListedTokens() public view returns (
+    Token[] memory) {
+    uint256 totalItemCount = tokenIds;
+    uint256 itemCount = 0;
+    uint256 currentIndex = 0;
+
+    for (uint256 i = 1; i <= totalItemCount; i++) {
+      if (idToToken[i].seller == msg.sender) {
+        itemCount += 1;
+      }
+    }
+
+    Token[] memory items = new Token[](itemCount);
+    for (uint256 i = 1; i <= totalItemCount; i++) {
+      if (idToToken[i].seller == msg.sender) {
+        Token storage currentItem = idToToken[i];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }
+    }
+    return items;
+  }
+
 }
