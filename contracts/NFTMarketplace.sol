@@ -59,4 +59,57 @@ contract NFTMarketplace is ERC721URIStorage {
   );
 
 
+  /**
+    * @dev Constructor
+  */
+
+  /**
+  * @dev Initializes the NFT marketplace contract.
+  */
+  constructor() ERC721("NFTMarketPlace", "NFTM") {
+    listingPrice = 0.1 ether;
+    owner = payable(msg.sender);
+  }
+
+
+  /**
+    * @dev Modifiers
+  */
+
+  /**
+  * @dev Throws an error if the caller is not the marketplace owner.
+  */
+  modifier onlyOwner() {
+    require(
+      msg.sender == owner,
+      "Caller is not the marketplace owner"
+    );
+    _;
+  }
+
+
+  /**
+    * @dev Functions
+  */
+
+  /**
+  * @dev Updates the listing price for creating tokens.
+  * @param _listingPrice The new listing price.
+  */
+  function updateListingPrice(
+    uint256 _listingPrice
+  ) external onlyOwner {
+    listingPrice = _listingPrice;
+  }
+
+  /**
+  * @dev Gets the current listing price.
+  * @return The current listing price.
+  */
+  function getListingPrice() external view returns (
+    uint256
+  ) {
+    return listingPrice;
+  }
+
 }
